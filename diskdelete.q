@@ -1,10 +1,12 @@
 / delete data from disk directly, loading one col at a time rather than whole table. Preserves attributes.
-/ diskdelete[`:2009.09.09/trade]
+/ goes to ridiculous lengths to avoid writing 
+/ diskzapdeleted[`:2009.09.09/trade]
 / diskcountdeleted[`:2009.09.09/trade]
+/ diskcleardeleted[`:2009.09.09/trade]
 / disksetdeleted[`:2009.09.09/trade;indices]
 / diskgetdeleted[`:2009.09.09/trade]
 
-diskdelete:{[t] / remove records from <t> where deleted=1b
+diskzapdeleted:{[t] / remove records from <t> where deleted=1b
 	if[0<r:sum deleted:exec deleted from t;
 		ii:where not deleted;deleted:0;
 		/ rewrite individual columns, do <deleted> last in case we need to recover from half finished run 
@@ -19,8 +21,15 @@ diskcountdeleted:{[t] / number of records in table <t> flagged for deletion
 
 disksetdeleted:{[t;ii] / flag indices (i) in table <t> for deletion
 	deleted:exec deleted from t;
-	deleted[ii]:1b;
-	(` sv t,`deleted)set deleted;
+	if[not all deleted[ii];
+		deleted[ii]:1b;
+		(` sv t,`deleted)set deleted];
+	(t;ii)}
+
+diskcleardeleted:{[t] / unflag/reset deleted flag in table <t>
+	if[count ii:where deleted:exec deleted from t;
+		deleted[ii]:0b;
+		(` sv t,`deleted)set deleted];
 	(t;ii)}
 
 \
@@ -28,7 +37,7 @@ disksetdeleted:{[t;ii] / flag indices (i) in table <t> for deletion
 / to add a <deleted> column to all partitions of table <trade> 
  addcol[`:db;`trade;`deleted;0b]
 / to cleanup all partitions for table <trade>
- diskdelete each allpaths[`:db;`trade]
+ diskzapdeleted each allpaths[`:db;`trade]
 / then maybe remove the <deleted> column from table <trade> again
  deletecol[`:db;`trade;`deleted]
 
