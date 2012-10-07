@@ -23,13 +23,13 @@ disksetdeleted:{[t;ii] / flag indices (i) in table <t> for deletion
 	deleted:exec deleted from t;
 	if[not all deleted[ii];
 		deleted[ii]:1b;
-		(` sv t,`deleted)set deleted];
+		(` sv t,`deleted;17;1;0)set deleted];
 	(t;ii)}
 
 diskcleardeleted:{[t] / unflag/reset deleted flag in table <t>
 	if[count ii:where deleted:exec deleted from t;
 		deleted[ii]:0b;
-		(` sv t,`deleted)set deleted];
+		(` sv t,`deleted;17;1;0)set deleted];
 	(t;ii)}
 
 \
